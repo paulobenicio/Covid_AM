@@ -2,7 +2,7 @@
 
 #Consultando diretório e instalando pacotes
 getwd()
-setwd("C:\\Users\\paulo\\Documents\\GitHub\\covid_amazonas\\Dados")
+setwd("C:\\Users\\paulo\\Documents\\GitHub\\covid_amazonas1\\Dados")
 install.packages("tidyverse")
 library(tidyverse)
 
@@ -187,4 +187,10 @@ covid_am_rs <- covid_am_rs %>% mutate (indice_permanencia_domiciliar = residenci
         taxa_obitos_ultimo_dia = last_available_death_rate,obitos_do_dia = new_deaths, 
         populacao_estimada_2020 = estimated_population)
 
-write.csv(covid_am_rs, "covid_am_rs.csv", row.names = F)
+covid_am_semana_obitos <- covid_am_rs %>% 
+  select(semana_epidemilogica, acumulo_obitos) %>%
+  group_by(semana_epidemilogica) %>% 
+  summarise(sum(acumulo_obitos))
+
+ggplot(covid_am_rs) +
+  geom_line(aes(x = semana_epidemilogica, y = indice_permanencia_domiciliar))
