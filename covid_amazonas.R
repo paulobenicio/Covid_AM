@@ -180,6 +180,14 @@ covid_am_rs <- covid_am_rs %>% mutate (indice_permanencia_domiciliar = residenci
          last_available_deaths, last_available_death_rate, 
          indice_permanencia_domiciliar,descanso_recreacao,mercado_farmacia, 
          parques, transito_estacoes, trabalho,residencia) %>% 
+  filter(!is.na(epidemiological_week)|!is.na(date)|!is.na(city)|
+           !is.na(Regiao_Saude)| !is.na(order_for_place)| !is.na(estimated_population)|
+           !is.na(last_available_confirmed)| !is.na(new_confirmed)| 
+           !is.na(last_available_confirmed_per_100k_inhabitants) | 
+           !is.na(new_deaths) | !is.na(last_available_deaths) | 
+           !is.na(last_available_death_rate) | !is.na(indice_permanencia_domiciliar)
+         | !is.na(descanso_recreacao) | !is.na(mercado_farmacia) | !is.na(parques)
+         | !is.na(transito_estacoes) | !is.na(trabalho) | !is.na(residencia)) %>% 
   rename(semana_epidemilogica = epidemiological_week, data = date, cidade = city,
         dias_primeiro_caso  = order_for_place, acumulo_confirmados = last_available_confirmed,
         acumulo_confirmados_100k = last_available_confirmed_per_100k_inhabitants, 
@@ -187,10 +195,19 @@ covid_am_rs <- covid_am_rs %>% mutate (indice_permanencia_domiciliar = residenci
         taxa_obitos_ultimo_dia = last_available_death_rate,obitos_do_dia = new_deaths, 
         populacao_estimada_2020 = estimated_population)
 
-covid_am_semana_obitos <- covid_am_rs %>% 
-  select(semana_epidemilogica, acumulo_obitos) %>%
-  group_by(semana_epidemilogica) %>% 
-  summarise(sum(acumulo_obitos))
+names(covid_am_rs)
 
-ggplot(covid_am_rs) +
-  geom_line(aes(x = semana_epidemilogica, y = indice_permanencia_domiciliar))
+covid_am_rs1 <-covid_am_rs %>% 
+  mutate(semana_epidemilogica = as.character(semana_epidemilogica)) %>%
+  mutate(indice_permanencia_domiciliar = as.numeric(indice_permanencia_domiciliar)) %>% 
+  mutate(obitos_do_dia = as.numeric(obitos_do_dia)) %>% 
+  group_by(semana_epidemilogica) %>% 
+  summarise(indice_permanencia_domiciliar = mean(indice_permanencia_domiciliar), 
+            obitos_do_dia = sum(obitos_do_dia)/10)
+
+covid_am_rs1 %>% 
+  mutate(semana_epidemilogica = fct_inorder(as.character(semana_epidemilogica))) %>% 
+  ggplot() +
+  geom_line(aes(semana_epidemilogica, indice_permanencia_domiciliar), group = 1, color = "blue") +
+  geom_line(aes(semana_epidemilogica, obitos_do_dia), group = 1, color = "dark red")
+
